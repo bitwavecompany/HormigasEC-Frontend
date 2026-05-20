@@ -1,0 +1,79 @@
+{
+  "hormigas": [
+    {
+      "id": 1,
+      "nombre_comun": "Hormiga Leafcutter",
+      "nombre_cientifico": "Atta cephalotes",
+      "familia": "Formicidae",
+      "subfamilia": "Myrmicinae",
+      "region": "Amazonía",
+      "provincia": "Napo",
+      "altitud_m": 450,
+      "latitud": -0.9592,
+      "longitud": -77.8129,
+      "descripcion": "Famosa por cortar hojas para cultivar hongos.",
+      "imagen_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Atta.cephalotes.gamergates.jpg/320px-Atta.cephalotes.gamergates.jpg",
+      "color_hex": "#E8A435"
+    },
+    {
+      "id": 2,
+      "nombre_comun": "Hormiga Bala",
+      "nombre_cientifico": "Paraponera clavata",
+      "familia": "Formicidae",
+      "subfamilia": "Paraponerinae",
+      "region": "Amazonía",
+      "provincia": "Sucumbíos",
+      "altitud_m": 280,
+      "latitud": -0.0862,
+      "longitud": -76.8897,
+      "descripcion": "Conocida por su picadura extremadamente dolorosa.",
+      "imagen_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Paraponera_clavata_%28ant%29.jpg/320px-Paraponera_clavata_%28ant%29.jpg",
+      "color_hex": "#C0392B"
+    },
+    {
+      "id": 3,
+      "nombre_comun": "Hormiga Guerrera",
+      "nombre_cientifico": "Eciton burchellii",
+      "familia": "Formicidae",
+      "subfamilia": "Dorylinae",
+      "region": "Costa",
+      "provincia": "Esmeraldas",
+      "altitud_m": 50,
+      "latitud": 0.9592,
+      "longitud": -79.6547,
+      "descripcion": "Forma columnas de caza de cientos de miles de individuos.",
+      "imagen_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Eciton_burchellii_army_ants.jpg/320px-Eciton_burchellii_army_ants.jpg",
+      "color_hex": "#8E44AD"
+    },
+    {
+      "id": 4,
+      "nombre_comun": "Hormiga Carpintera",
+      "nombre_cientifico": "Camponotus sericeiventris",
+      "familia": "Formicidae",
+      "subfamilia": "Formicinae",
+      "region": "Sierra",
+      "provincia": "Pichincha",
+      "altitud_m": 2800,
+      "latitud": -0.1807,
+      "longitud": -78.4678,
+      "descripcion": "Anida en madera muerta en zonas altoandinas.",
+      "imagen_url": "",
+      "color_hex": "#27AE60"
+    },
+    {
+      "id": 5,
+      "nombre_comun": "Hormiga de Fuego",
+      "nombre_cientifico": "Solenopsis geminata",
+      "familia": "Formicidae",
+      "subfamilia": "Myrmicinae",
+      "region": "Costa",
+      "provincia": "Guayas",
+      "altitud_m": 10,
+      "latitud": -2.1894,
+      "longitud": -79.8891,
+      "descripcion": "Especie invasora de zonas tropicales bajas.",
+      "imagen_url": "",
+      "color_hex": "#E74C3C"
+    }
+  ]
+}

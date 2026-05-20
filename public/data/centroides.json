@@ -1,0 +1,317 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Azuay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.09295,
+          -3.072
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Bolivar"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.12180000000001,
+          -1.6525499999999997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Cañar"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.0466,
+          -2.5265500000000003
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Carchi"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.04425,
+          0.7711
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Chimborazo"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.806,
+          -2.0285
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Cotopaxi"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.8517,
+          -0.7757499999999999
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "ElOro"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.904,
+          -3.4686000000000003
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Esmeraldas"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.26429999999999,
+          0.71495
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Galápagos"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.825,
+          0.13495000000000001
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Guayas"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.8329,
+          -1.9543499999999998
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Imbabura"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.5428,
+          0.49855
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Loja"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.79075,
+          -4.0384
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "LosRios"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.4808,
+          -1.33555
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Manabi"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.24495,
+          -0.7828
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "MoronaSantiago"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.82300000000001,
+          -2.5180499999999997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Napo"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -77.72645,
+          -0.6073
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Orellana"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.4079,
+          -0.79735
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Pastaza"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.88165000000001,
+          -1.8039
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Pichincha"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.6055,
+          -0.17479999999999998
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "SantaElena"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.6058,
+          -2.08775
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "SantoDomingodelosTsachilas"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -79.18105,
+          -0.33694999999999997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Sucumbios"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -76.60175000000001,
+          0.003249999999999975
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "Tungurahua"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.52465000000001,
+          -1.25895
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "NAME_1": "ZamoraChinchipe"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -78.8964,
+          -4.179
+        ]
+      }
+    }
+  ]
+}
