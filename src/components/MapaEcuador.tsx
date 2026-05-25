@@ -22,7 +22,7 @@ class HomeControl {
     btn.title = 'Vista completa del Ecuador'
     btn.style.cssText =
       'font-size:16px;cursor:pointer;width:29px;height:29px;display:flex;align-items:center;justify-content:center;'
-    btn.innerHTML = '🏠'
+    btn.innerHTML = '&#8962;'
     btn.onclick = () => map.flyTo({ center: MAP_CENTER, zoom: MAP_ZOOM, duration: 800 })
     this._container.appendChild(btn)
     return this._container
@@ -121,8 +121,8 @@ export default function MapaEcuador({ hormigas, onProvinciaClick, provinciaSelec
             paint: {
               'fill-color': [
                 'case',
-                ['boolean', ['feature-state', 'selected'], false], 'rgba(22,163,74,0.15)',
-                ['boolean', ['feature-state', 'hover'], false],    'rgba(22,163,74,0.08)',
+                ['boolean', ['feature-state', 'selected'], false], 'rgba(22,163,74,0.15)', // --color-brand-selected
+                ['boolean', ['feature-state', 'hover'], false],    'rgba(22,163,74,0.08)', // --color-brand-subtle
                 'rgba(255,255,255,0.60)',
               ],
               'fill-opacity': 1,
@@ -136,8 +136,8 @@ export default function MapaEcuador({ hormigas, onProvinciaClick, provinciaSelec
             paint: {
               'line-color': [
                 'case',
-                ['boolean', ['feature-state', 'selected'], false], '#16a34a',
-                ['boolean', ['feature-state', 'hover'], false],    '#15803d',
+                ['boolean', ['feature-state', 'selected'], false], '#16a34a', // --color-brand
+                ['boolean', ['feature-state', 'hover'], false],    '#15803d', // --color-brand-dark
                 'rgba(71,85,105,0.50)',
               ],
               'line-width': [
@@ -355,7 +355,6 @@ export default function MapaEcuador({ hormigas, onProvinciaClick, provinciaSelec
         >
           <div className="bg-white/95 backdrop-blur border border-gray-200 rounded-xl px-4 py-3 shadow-2xl min-w-[180px]">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-lg">🐜</span>
               <span className="text-gray-900 font-semibold text-sm">{tooltipHover.nombre}</span>
             </div>
             {tooltipHover.cantidadHormigas > 0 ? (
@@ -384,7 +383,7 @@ export default function MapaEcuador({ hormigas, onProvinciaClick, provinciaSelec
       )}
       {!provinciaSeleccionada && (
         <div className="absolute bottom-4 right-4 z-10 bg-white/90 backdrop-blur-sm text-gray-500 text-xs px-3 py-2 rounded-lg shadow-sm border border-gray-200 pointer-events-none">
-          👆 Haz clic en una provincia para explorar
+          Haz clic en una provincia para explorar
         </div>
       )}
     </div>

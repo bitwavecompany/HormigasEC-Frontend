@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&family=DM+Sans:wght@400;500&display=swap');
+@import './styles/tokens.css';
+@import './styles/components.css';
 
 @tailwind base;
 @tailwind components;
@@ -11,11 +13,11 @@
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  background: #f8faf8;
-  color: #1a2e1a;
+  font-family: var(--font-body);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
 }
 
 .maplibregl-canvas {
-  border-radius: 0.75rem;
+  border-radius: var(--radius-card, 0.75rem);
 }

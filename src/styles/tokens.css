@@ -1,0 +1,43 @@
+:root {
+  /* Colores de marca */
+  --color-brand:        #16a34a;
+  --color-brand-dark:   #15803d;
+  --color-brand-darker: #166534;
+  --color-brand-light:  #dcfce7;
+  --color-brand-subtle: rgba(22, 163, 74, 0.08);
+  --color-brand-selected: rgba(22, 163, 74, 0.15);
+
+  /* Superficies */
+  --color-surface:      #f8faf8;
+  --color-surface-card: #ffffff;
+  --color-surface-muted: #f3f6f3;
+
+  /* Tipografía */
+  --color-ink:          #1a2e1a;
+  --color-ink-muted:    #6b7280;
+  --color-ink-faint:    #9ca3af;
+
+  /* Bordes */
+  --color-border:       #e5e7eb;
+  --color-border-brand: #16a34a;
+
+  /* Estados de error */
+  --color-danger:        #dc2626;
+  --color-danger-subtle: #fef2f2;
+  --color-danger-border: #fecaca;
+
+  /* Fuentes */
+  --font-display: 'Nunito', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  /* Sombras de marca */
+  --shadow-brand-sm:  rgba(100, 180, 120, 0.88) 0px 10px 10px -5px;
+  --shadow-brand-md:  rgba(100, 180, 120, 0.88) 0px 20px 10px -15px;
+  --shadow-brand-lg:  rgba(100, 180, 120, 0.88) 0px 30px 30px -20px;
+
+  /* Animaciones */
+  --duration-fast:   150ms;
+  --duration-normal: 250ms;
+  --duration-slow:   500ms;
+  --ease-default:    ease-out;
+}
