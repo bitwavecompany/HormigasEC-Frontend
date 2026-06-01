@@ -68,7 +68,7 @@ export default function ArchivosModule() {
     if (!archivoSeleccionado) { toast.error('Selecciona un archivo'); return }
     setSubiendo(true)
     try {
-      const newFile = await uploadExcel(archivoSeleccionado)
+      const newFile = await uploadExcel(archivoSeleccionado, nombrePersonalizado.trim() || archivoSeleccionado.name)
       const customName = nombrePersonalizado.trim()
       let finalFile = newFile
       if (customName && customName !== archivoSeleccionado.name) {
@@ -116,7 +116,7 @@ export default function ArchivosModule() {
 
   const abrirEdit = (archivo: ExcelFileRead) => {
     setEditTarget(archivo)
-    setNombreEdit(archivo.file_name)
+    setNombreEdit(archivo.title)
   }
 
   const handleGuardarEdit = async () => {
@@ -181,7 +181,7 @@ export default function ArchivosModule() {
                     <td className="px-4 py-3 text-ink font-medium">
                       <div className="flex items-center gap-2">
                         <FileSpreadsheet size={15} className="text-brand flex-shrink-0" />
-                        {a.file_name}
+                        {a.title}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-ink-muted">{a.uploaded_by_name}</td>
@@ -338,7 +338,7 @@ export default function ArchivosModule() {
         titulo="Eliminar archivo"
         descripcion={
           deleteTarget
-            ? <>¿Eliminar <span className="font-medium text-ink">"{deleteTarget.file_name}"</span>? Esta acción no se puede deshacer.</>
+            ? <>¿Eliminar <span className="font-medium text-ink">"{deleteTarget.title}"</span>? Esta acción no se puede deshacer.</>
             : null
         }
         onConfirm={handleEliminar}

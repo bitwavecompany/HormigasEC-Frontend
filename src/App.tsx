@@ -8,6 +8,7 @@ import AppLayout from './layouts/AppLayout'
 import MapaModule from './modules/mapa/MapaModule'
 import UsuariosModule from './modules/usuarios/UsuariosModule'
 import ArchivosModule from './modules/archivos/ArchivosModule'
+import HistorialModule from './modules/historial/HistorialModule'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
               <Route path="mapa" element={<MapaModule />} />
               <Route path="usuarios" element={<UsuariosModule />} />
               <Route path="archivos" element={<ArchivosModule />} />
+              <Route path="historial" element={<HistorialModule />} />
               <Route index element={<Navigate to="mapa" replace />} />
             </Route>
           </Route>

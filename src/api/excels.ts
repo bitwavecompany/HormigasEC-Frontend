@@ -3,6 +3,7 @@ import { apiFetch, getAuthHeaders, getBearerHeaders } from './client'
 export interface ExcelFileRead {
   id: number
   file_name: string
+  title: string
   content_type: string
   uploaded_by_user_id: number
   uploaded_by_name: string
@@ -17,9 +18,10 @@ export async function listExcels(): Promise<ExcelFileRead[]> {
   })
 }
 
-export async function uploadExcel(file: File): Promise<ExcelFileRead> {
+export async function uploadExcel(file: File, title: string): Promise<ExcelFileRead> {
   const formData = new FormData()
   formData.append('file', file)
+  formData.append('title', title)
   return apiFetch<ExcelFileRead>('/excels', {
     method: 'POST',
     headers: getBearerHeaders(), // NO Content-Type header — browser sets multipart boundary
@@ -31,7 +33,7 @@ export async function renameExcel(id: number, fileName: string): Promise<ExcelFi
   return apiFetch<ExcelFileRead>(`/excels/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ file_name: fileName }),
+    body: JSON.stringify({ title: fileName }),
   })
 }
 

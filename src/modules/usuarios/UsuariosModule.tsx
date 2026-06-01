@@ -6,9 +6,13 @@ import type { UserRead } from '../../api/users'
 import ConfirmarEliminar from '../../components/ConfirmarEliminar'
 
 const ROL_LABELS: Record<string, string> = {
-  admin: 'Admin',
-  researcher: 'Investigador',
+  admin: 'Administrador',
+  researcher: 'Colaborador',
   viewer: 'Visitante',
+}
+
+function formatRol(role: string): string {
+  return ROL_LABELS[role] ?? role
 }
 
 const ROL_CLASSES: Record<string, string> = {
@@ -111,7 +115,7 @@ export default function UsuariosModule() {
     }
     setCreating(true)
     try {
-      const newUser = await createUser({ email, full_name: fullName, password })
+      const newUser = await createUser({ email, full_name: fullName, password, role })
       toast.success('Usuario creado correctamente')
       setUsers(prev => [newUser, ...prev])
       handleCloseModal()
@@ -168,7 +172,7 @@ export default function UsuariosModule() {
                     <td className="px-4 py-3 text-ink">{u.email}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${ROL_CLASSES[u.role] ?? 'bg-surface-muted text-ink-muted'}`}>
-                        {ROL_LABELS[u.role] ?? u.role}
+                        {formatRol(u.role)}
                       </span>
                     </td>
                     <td className="px-4 py-3">

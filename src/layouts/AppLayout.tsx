@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Map, Users, FolderOpen, Menu, LogOut, CircleUserRound, X } from 'lucide-react'
+import { Map, Users, FolderOpen, Menu, LogOut, CircleUserRound, X, ClipboardList } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import SidebarFieldCanvas from '../components/SidebarFieldCanvas'
 
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { to: '/app/mapa', icon: Map, label: 'Mapa' },
   { to: '/app/usuarios', icon: Users, label: 'Usuarios' },
   { to: '/app/archivos', icon: FolderOpen, label: 'Archivos' },
+  { to: '/app/historial', icon: ClipboardList, label: 'Historial' },
 ]
 
 const SIDEBAR_INTERACTIVE_ZONES: Array<{ yStart: number; yEnd: number }> = [

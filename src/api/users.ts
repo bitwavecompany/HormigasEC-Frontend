@@ -52,12 +52,11 @@ export async function deleteUser(id: number): Promise<void> {
   }
 }
 
-// createUser uses POST /auth/register — backend only accepts email, password, full_name
-// The role field is NOT accepted by the backend register endpoint; new users always get role=VIEWER
-export async function createUser(data: { email: string; password: string; full_name: string }): Promise<UserRead> {
+// createUser uses POST /auth/register — backend accepts email, password, full_name, role
+export async function createUser(data: { email: string; password: string; full_name: string; role: 'admin' | 'researcher' | 'viewer' }): Promise<UserRead> {
   return apiFetch<UserRead>('/auth/register', {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ email: data.email, password: data.password, full_name: data.full_name }),
+    body: JSON.stringify({ email: data.email, password: data.password, full_name: data.full_name, role: data.role }),
   })
 }
