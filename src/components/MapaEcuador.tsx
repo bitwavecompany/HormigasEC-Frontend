@@ -7,6 +7,8 @@ const MAP_CENTER: [number, number] = [-79.5, -1.5]
 const MAP_ZOOM = 4.8 
 const MAP_BOUNDS: maplibregl.LngLatBoundsLike = [[-92.0, -6.5], [-73.0, 3.0]]
 
+const norm = (s: string | undefined | null) => s ? s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() : ''
+
 interface ProvinciaProperties {
   NAME_1: string
 }
@@ -14,16 +16,25 @@ interface ProvinciaProperties {
 class HomeControl {
   _map: maplibregl.Map | null = null
   _container: HTMLElement | null = null
+  _onReset?: () => void
+
+  constructor(onReset?: () => void) {
+    this._onReset = onReset
+  }
+
   onAdd(map: maplibregl.Map) {
     this._map = map
     this._container = document.createElement('div')
     this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group'
     const btn = document.createElement('button')
-    btn.title = 'Vista completa del Ecuador'
+    btn.title = 'Restaurar mapa y filtros'
     btn.style.cssText =
-      'font-size:16px;cursor:pointer;width:29px;height:29px;display:flex;align-items:center;justify-content:center;'
-    btn.innerHTML = '&#8962;'
-    btn.onclick = () => map.flyTo({ center: MAP_CENTER, zoom: MAP_ZOOM, duration: 800 })
+      'font-size:16px;cursor:pointer;width:29px;height:29px;display:flex;align-items:center;justify-content:center;color:#4b5563;'
+    btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>'
+    btn.onclick = () => {
+      map.flyTo({ center: MAP_CENTER, zoom: MAP_ZOOM, duration: 800 })
+      if (this._onReset) this._onReset()
+    }
     this._container.appendChild(btn)
     return this._container
   }
@@ -35,35 +46,47 @@ class HomeControl {
 
 interface Props {
   hormigas: Hormiga[]
+  provinciasRegion: string[]
   onProvinciaClick: (provincia: string, hormigas: Hormiga[]) => void
   provinciaSeleccionada: string | null
   onParroquiaClick: (codigo: string | null, nombre: string | null, canton: string | null) => void
   parroquiaSeleccionada: string | null
   parroquiaNombre: string | null
+  hormigaEnfocada?: Hormiga | null
+  especieSeleccionada?: string | null
+  onReset?: () => void
 }
 
 export default function MapaEcuador({
   hormigas,
+  provinciasRegion,
   onProvinciaClick,
   provinciaSeleccionada,
   onParroquiaClick,
   parroquiaSeleccionada,
   parroquiaNombre,
+  hormigaEnfocada,
+  especieSeleccionada,
+  onReset
 }: Props) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<maplibregl.Map | null>(null)
   const [listo, setListo] = useState(false)
   const [tooltipHover, setTooltipHover] = useState<{
-    x: number; y: number; nombre: string; cantidadHormigas: number
+    x: number; y: number;
+    nombre: string; cantidadHormigas: number
     tipo?: 'provincia' | 'parroquia'; canton?: string
   } | null>(null)
 
-  const hormigasRef = useRef<Hormiga[]>(hormigas)
+  const hormigasRef = useRef<Hormiga[]>(hormigas || [])
+  const provinciasRegionRef = useRef<string[]>(provinciasRegion || [])
   const onProvinciaClickRef = useRef(onProvinciaClick)
   const onParroquiaClickRef = useRef(onParroquiaClick)
+  const onResetRef = useRef(onReset)
   const provinciasDataRef = useRef<GeoJSON.FeatureCollection | null>(null)
   const provinciaSeleccionadaRef = useRef<string | null>(provinciaSeleccionada)
   const parroquiaSeleccionadaRef = useRef<string | null>(parroquiaSeleccionada)
+  const especieSeleccionadaRef = useRef<string | null>(especieSeleccionada || null)
   const parroquiasCacheRef = useRef<GeoJSON.FeatureCollection | null>(null)
   
   const hoveredParroquiaIdRef = useRef<number | null>(null)
@@ -71,17 +94,21 @@ export default function MapaEcuador({
   const hoveredProvinciaIdRef = useRef<number | null>(null)
   const selectedProvinciaIdRef = useRef<number | null>(null)
 
-  useEffect(() => { hormigasRef.current = hormigas }, [hormigas])
+  useEffect(() => { hormigasRef.current = hormigas || [] }, [hormigas])
+  useEffect(() => { provinciasRegionRef.current = provinciasRegion || [] }, [provinciasRegion])
   useEffect(() => { onProvinciaClickRef.current = onProvinciaClick }, [onProvinciaClick])
   useEffect(() => { onParroquiaClickRef.current = onParroquiaClick }, [onParroquiaClick])
+  useEffect(() => { onResetRef.current = onReset }, [onReset])
   useEffect(() => { provinciaSeleccionadaRef.current = provinciaSeleccionada }, [provinciaSeleccionada])
   useEffect(() => { parroquiaSeleccionadaRef.current = parroquiaSeleccionada }, [parroquiaSeleccionada])
+  useEffect(() => { especieSeleccionadaRef.current = especieSeleccionada || null }, [especieSeleccionada])
 
   useEffect(() => {
     if (map.current || !mapContainer.current) return
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
+      attributionControl: false,
       style: {
         version: 8,
         glyphs: '/fonts/{fontstack}/{range}.pbf',
@@ -97,7 +124,7 @@ export default function MapaEcuador({
       center: MAP_CENTER,
       zoom: MAP_ZOOM,
       minZoom: MAP_ZOOM,
-      maxZoom: 14,
+      maxZoom: 18,
       maxBounds: MAP_BOUNDS,
     })
 
@@ -118,8 +145,10 @@ export default function MapaEcuador({
 
     ajustarZoomResponsive()
     window.addEventListener('resize', ajustarZoomResponsive)
-    map.current.addControl(new maplibregl.NavigationControl(), 'top-right')
-    map.current.addControl(new HomeControl() as maplibregl.IControl, 'top-right')
+    map.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
+    map.current.addControl(new HomeControl(() => {
+      if (onResetRef.current) onResetRef.current()
+    }) as maplibregl.IControl, 'top-right')
 
     map.current.on('load', async () => {
       if (!map.current) return
@@ -176,7 +205,7 @@ export default function MapaEcuador({
       map.current.addSource('centroides-provincias', { type: 'geojson', data: { type: 'FeatureCollection', features: centroidesFeatures } })
       map.current.addSource('centroides-parroquias', { type: 'geojson', data: { type: 'FeatureCollection', features: centroidesParroquiasGlobal } })
 
-            map.current.addLayer({
+      map.current.addLayer({
         id: 'provincias-fill',
         type: 'fill',
         source: 'provincias-contornos',
@@ -184,6 +213,7 @@ export default function MapaEcuador({
         paint: {
           'fill-color': [
             'case',
+            ['boolean', ['feature-state', 'disabled'], false], 'rgba(100, 115, 130, 0.25)',
             ['boolean', ['feature-state', 'selected'], false], 'rgba(22,163,74,0.20)',
             ['boolean', ['feature-state', 'hover'], false],    'rgba(22,163,74,0.08)',
             'rgba(255,255,255,0.60)',
@@ -200,6 +230,7 @@ export default function MapaEcuador({
         paint: {
           'fill-color': [
             'case',
+            ['boolean', ['feature-state', 'disabled'], false], 'rgba(100, 115, 130, 0.25)',
             ['boolean', ['feature-state', 'selected'], false], 'rgba(22,163,74,0.20)',
             ['boolean', ['feature-state', 'hover'], false],    'rgba(22,163,74,0.08)',
             'rgba(255,255,255,0.60)',
@@ -216,6 +247,7 @@ export default function MapaEcuador({
         paint: {
           'line-color': [
             'case',
+            ['boolean', ['feature-state', 'disabled'], false], 'rgba(100, 115, 130, 0.35)',
             ['boolean', ['feature-state', 'selected'], false], '#16a34a',
             ['boolean', ['feature-state', 'hover'], false],    '#15803d',
             'rgba(71,85,105,0.30)',
@@ -235,7 +267,11 @@ export default function MapaEcuador({
         type: 'line',
         source: 'provincias-contornos',
         paint: {
-          'line-color': 'rgba(71,85,105,0.60)',
+          'line-color': [
+            'case',
+            ['boolean', ['feature-state', 'disabled'], false], 'rgba(100, 115, 130, 0.35)',
+            'rgba(71,85,105,0.60)',
+          ],
           'line-width': 1.8,
         },
       })
@@ -290,28 +326,41 @@ export default function MapaEcuador({
           }
         }
       })
-      
+
       map.current.on('mousemove', 'provincias-fill', (e) => {
-        if (!map.current) return
-        map.current.getCanvas().style.cursor = 'pointer'
-        if (e.features && e.features.length > 0) {
-          const featureId = e.features[0].id as number
-          if (hoveredProvinciaIdRef.current !== null && hoveredProvinciaIdRef.current !== featureId) {
-            map.current.setFeatureState({ source: 'provincias-contornos', id: hoveredProvinciaIdRef.current }, { hover: false })
-          }
-          hoveredProvinciaIdRef.current = featureId
-          map.current.setFeatureState({ source: 'provincias-contornos', id: featureId }, { hover: true })
-          
-          const props = e.features[0].properties as ProvinciaProperties
-          const cantidad = hormigasRef.current.filter(h => h.provincia === props.NAME_1).length
-          
-          setTooltipHover({
-            x: e.point.x + 16, y: e.point.y - 16, 
-            nombre: props.NAME_1, 
-            cantidadHormigas: cantidad, 
-            tipo: 'provincia'
-          })
+        if (!map.current || !e.features || e.features.length === 0) return
+        const props = e.features[0].properties as ProvinciaProperties
+        
+        let activeProvinces: string[] = []
+        if (especieSeleccionadaRef.current) {
+          activeProvinces = Array.from(new Set((hormigasRef.current || []).filter(h => h.scientific_name_ant === especieSeleccionadaRef.current).map(h => norm(h.province))))
+        } else if (provinciasRegionRef.current.length > 0) {
+          activeProvinces = provinciasRegionRef.current.map(p => norm(p))
         }
+
+        if (activeProvinces.length > 0 && !activeProvinces.includes(norm(props.NAME_1))) {
+          map.current.getCanvas().style.cursor = ''
+          return
+        }
+
+        map.current.getCanvas().style.cursor = 'pointer'
+        const featureId = e.features[0].id as number
+        if (hoveredProvinciaIdRef.current !== null && hoveredProvinciaIdRef.current !== featureId) {
+          map.current.setFeatureState({ source: 'provincias-contornos', id: hoveredProvinciaIdRef.current }, { hover: false })
+        }
+        hoveredProvinciaIdRef.current = featureId
+        map.current.setFeatureState({ source: 'provincias-contornos', id: featureId }, { hover: true })
+        
+        const cantidad = especieSeleccionadaRef.current
+          ? (hormigasRef.current || []).filter(h => h.scientific_name_ant === especieSeleccionadaRef.current && norm(h.province) === norm(props.NAME_1)).length
+          : (hormigasRef.current || []).filter(h => norm(h.province) === norm(props.NAME_1)).length
+        
+        setTooltipHover({
+          x: e.point.x + 16, y: e.point.y - 16, 
+          nombre: props.NAME_1, 
+          cantidadHormigas: cantidad, 
+          tipo: 'provincia'
+        })
       })
 
       map.current.on('mouseleave', 'provincias-fill', () => {
@@ -329,36 +378,60 @@ export default function MapaEcuador({
         const props = e.features[0].properties as ProvinciaProperties
         const clickedProvincia = props.NAME_1
 
+        let activeProvinces: string[] = []
+        if (especieSeleccionadaRef.current) {
+          activeProvinces = Array.from(new Set((hormigasRef.current || []).filter(h => h.scientific_name_ant === especieSeleccionadaRef.current).map(h => norm(h.province))))
+        } else if (provinciasRegionRef.current.length > 0) {
+          activeProvinces = provinciasRegionRef.current.map(p => norm(p))
+        }
+
+        if (activeProvinces.length > 0 && !activeProvinces.includes(norm(clickedProvincia))) {
+          return
+        }
+
         if (provinciaSeleccionadaRef.current === clickedProvincia) {
           map.current?.easeTo({ zoom: 7.5, duration: 800 })
         } else {
-          const hormigasEnProvincia = hormigasRef.current.filter(h => h.provincia === clickedProvincia)
+          const hormigasEnProvincia = (hormigasRef.current || []).filter(h => norm(h.province) === norm(clickedProvincia))
           onProvinciaClickRef.current(clickedProvincia, hormigasEnProvincia)
         }
       })
-      
+
       map.current.on('mousemove', 'parroquias-global-fill', (e) => {
-        if (!map.current) return
-        map.current.getCanvas().style.cursor = 'pointer'
-        if (e.features && e.features.length > 0) {
-          const featureId = e.features[0].id as number
-          if (hoveredParroquiaIdRef.current !== null && hoveredParroquiaIdRef.current !== featureId) {
-            map.current.setFeatureState({ source: 'parroquias-global', id: hoveredParroquiaIdRef.current }, { hover: false })
-          }
-          hoveredParroquiaIdRef.current = featureId
-          map.current.setFeatureState({ source: 'parroquias-global', id: featureId }, { hover: true })
-          
-          const props = e.features[0].properties as ParroquiaProperties
-          const cantidad = hormigasRef.current.filter(h => h.parroquia === props.NAME_3).length
-          
-          setTooltipHover({
-            x: e.point.x + 16, y: e.point.y - 16, 
-            nombre: props.NAME_3, 
-            cantidadHormigas: cantidad, 
-            tipo: 'parroquia', 
-            canton: props.NAME_2 
-          })
+        if (!map.current || !e.features || e.features.length === 0) return
+        const props = e.features[0].properties as ParroquiaProperties
+
+        let activeProvinces: string[] = []
+        if (especieSeleccionadaRef.current) {
+          activeProvinces = Array.from(new Set((hormigasRef.current || []).filter(h => h.scientific_name_ant === especieSeleccionadaRef.current).map(h => norm(h.province))))
+        } else if (provinciasRegionRef.current.length > 0) {
+          activeProvinces = provinciasRegionRef.current.map(p => norm(p))
         }
+
+        if (activeProvinces.length > 0 && !activeProvinces.includes(norm(props.NAME_1))) {
+          map.current.getCanvas().style.cursor = ''
+          return
+        }
+
+        map.current.getCanvas().style.cursor = 'pointer'
+        const featureId = e.features[0].id as number
+        if (hoveredParroquiaIdRef.current !== null && hoveredParroquiaIdRef.current !== featureId) {
+          map.current.setFeatureState({ source: 'parroquias-global', id: hoveredParroquiaIdRef.current }, { hover: false })
+        }
+        hoveredParroquiaIdRef.current = featureId
+        map.current.setFeatureState({ source: 'parroquias-global', id: featureId }, { hover: true })
+        
+        const cantidad = especieSeleccionadaRef.current
+          ? (hormigasRef.current || []).filter(h => h.scientific_name_ant === especieSeleccionadaRef.current && norm(h.parish) === norm(props.NAME_3)).length
+          : (hormigasRef.current || []).filter(h => norm(h.parish) === norm(props.NAME_3)).length
+        
+        setTooltipHover({
+          x: e.point.x + 16, y: e.point.y - 16, 
+          nombre: props.NAME_3, 
+          cantidadHormigas: cantidad, 
+          tipo: 'parroquia', 
+          canton: props.NAME_2 
+        })
       })
 
       map.current.on('mouseleave', 'parroquias-global-fill', () => {
@@ -377,13 +450,24 @@ export default function MapaEcuador({
         const clickedProvincia = props.NAME_1
         const clickedParroquia = props.CC_3
 
+        let activeProvinces: string[] = []
+        if (especieSeleccionadaRef.current) {
+          activeProvinces = Array.from(new Set((hormigasRef.current || []).filter(h => h.scientific_name_ant === especieSeleccionadaRef.current).map(h => norm(h.province))))
+        } else if (provinciasRegionRef.current.length > 0) {
+          activeProvinces = provinciasRegionRef.current.map(p => norm(p))
+        }
+
+        if (activeProvinces.length > 0 && !activeProvinces.includes(norm(clickedProvincia))) {
+          return
+        }
+
         if (parroquiaSeleccionadaRef.current === clickedParroquia) {
           onParroquiaClickRef.current(null, null, null)
           return
         }
 
         if (provinciaSeleccionadaRef.current !== clickedProvincia) {
-          const hormigasEnProvincia = hormigasRef.current.filter(h => h.provincia === clickedProvincia)
+          const hormigasEnProvincia = (hormigasRef.current || []).filter(h => norm(h.province) === norm(clickedProvincia))
           onProvinciaClickRef.current(clickedProvincia, hormigasEnProvincia)
         }
         
@@ -403,14 +487,69 @@ export default function MapaEcuador({
   useEffect(() => {
     if (!map.current || !listo || !provinciasDataRef.current) return
 
+    let activeProvinces: string[] = []
+    let filteringActive = false
+
+    if (especieSeleccionada) {
+      filteringActive = true
+      activeProvinces = Array.from(new Set((hormigas || []).filter(h => h.scientific_name_ant === especieSeleccionada).map(h => norm(h.province))))
+    } else if (provinciasRegion.length > 0) {
+      filteringActive = true
+      activeProvinces = provinciasRegion.map(p => norm(p))
+    }
+
+    provinciasDataRef.current.features.forEach((f) => {
+      if (f.id !== undefined) {
+        const name = norm((f.properties as ProvinciaProperties).NAME_1)
+        const isDisabled = filteringActive && !activeProvinces.includes(name)
+        map.current!.setFeatureState({ source: 'provincias-contornos', id: f.id as number }, { disabled: isDisabled })
+      }
+    })
+
+    if (parroquiasCacheRef.current) {
+      parroquiasCacheRef.current.features.forEach((f) => {
+        if (f.id !== undefined) {
+          const name = norm((f.properties as ParroquiaProperties).NAME_1)
+          const isDisabled = filteringActive && !activeProvinces.includes(name)
+          map.current!.setFeatureState({ source: 'parroquias-global', id: f.id as number }, { disabled: isDisabled })
+        }
+      })
+    }
+  }, [provinciasRegion, especieSeleccionada, hormigas, listo])
+
+  useEffect(() => {
+    if (!map.current || !listo || !provinciasDataRef.current) return
+
     if (selectedProvinciaIdRef.current !== null) {
       map.current.setFeatureState({ source: 'provincias-contornos', id: selectedProvinciaIdRef.current }, { selected: false })
       selectedProvinciaIdRef.current = null
     }
 
-    if (provinciaSeleccionada) {
+    if (hormigaEnfocada) {
+      map.current.flyTo({
+        center: [Number(hormigaEnfocada.longitude), Number(hormigaEnfocada.latitude)],
+        zoom: 16,
+        essential: true,
+        duration: 1500
+      })
+    } else if (especieSeleccionada) {
+      const hormigasEspecie = (hormigas || []).filter(h => h.scientific_name_ant === especieSeleccionada)
+      if (hormigasEspecie.length > 0) {
+        const bounds = new maplibregl.LngLatBounds()
+        let hasPoints = false
+        hormigasEspecie.forEach(h => {
+          if (h.longitude !== undefined && h.latitude !== undefined) {
+            bounds.extend([Number(h.longitude), Number(h.latitude)])
+            hasPoints = true
+          }
+        })
+        if (hasPoints) {
+          map.current.fitBounds(bounds, { padding: 80, duration: 1200, maxZoom: 8 })
+        }
+      }
+    } else if (provinciaSeleccionada) {
       const feature = provinciasDataRef.current.features.find(
-        (f: GeoJSON.Feature) => (f.properties as ProvinciaProperties).NAME_1 === provinciaSeleccionada
+        (f: GeoJSON.Feature) => norm((f.properties as ProvinciaProperties).NAME_1) === norm(provinciaSeleccionada)
       )
       if (feature) {
         if (feature.id !== undefined) {
@@ -436,7 +575,7 @@ export default function MapaEcuador({
     } else {
       map.current.flyTo({ center: MAP_CENTER, zoom: MAP_ZOOM, duration: 800 })
     }
-  }, [provinciaSeleccionada, listo])
+  }, [provinciaSeleccionada, hormigaEnfocada, especieSeleccionada, hormigas, listo])
 
   useEffect(() => {
     if (!map.current || !listo || !parroquiasCacheRef.current) return
@@ -458,11 +597,17 @@ export default function MapaEcuador({
   }, [parroquiaSeleccionada, listo])
 
   useEffect(() => {
-    if (!map.current || !listo || !provinciaSeleccionada) return
+    if (!map.current || !listo) return
 
-    const hormigasFiltradas = parroquiaSeleccionada && parroquiaNombre
-      ? hormigas.filter(h => h.parroquia === parroquiaNombre)
-      : hormigas.filter(h => h.provincia === provinciaSeleccionada)
+    let hormigasFiltradas: Hormiga[] = []
+
+    if (especieSeleccionada) {
+      hormigasFiltradas = (hormigas || []).filter(h => h.scientific_name_ant === especieSeleccionada)
+    } else if (parroquiaSeleccionada && parroquiaNombre) {
+      hormigasFiltradas = (hormigas || []).filter(h => norm(h.parish) === norm(parroquiaNombre))
+    } else if (provinciaSeleccionada) {
+      hormigasFiltradas = (hormigas || []).filter(h => norm(h.province) === norm(provinciaSeleccionada))
+    }
 
     if (map.current.getLayer('hormigas-points')) map.current.removeLayer('hormigas-points')
     if (map.current.getSource('hormigas')) map.current.removeSource('hormigas')
@@ -473,8 +618,8 @@ export default function MapaEcuador({
       type: 'FeatureCollection',
       features: hormigasFiltradas.map(h => ({
         type: 'Feature',
-        geometry: { type: 'Point', coordinates: [h.longitud, h.latitud] },
-        properties: { nombre: h.nombre_comun, cientifico: h.nombre_cientifico, color: h.color_hex },
+        geometry: { type: 'Point', coordinates: [Number(h.longitude), Number(h.latitude)] },
+        properties: { nombre: h.comun_name_ant, cientifico: h.scientific_name_ant, color: h.color_hex },
       })),
     }
 
@@ -485,7 +630,7 @@ export default function MapaEcuador({
       type: 'circle',
       source: 'hormigas',
       paint: {
-        'circle-radius': 10,
+        'circle-radius': 6,
         'circle-color': ['get', 'color'],
         'circle-opacity': 0.9,
         'circle-stroke-width': 2,
@@ -517,7 +662,7 @@ export default function MapaEcuador({
       map.current.getCanvas().style.cursor = ''
       popup.remove()
     })
-  }, [provinciaSeleccionada, parroquiaSeleccionada, parroquiaNombre, hormigas, listo])
+  }, [provinciaSeleccionada, parroquiaSeleccionada, parroquiaNombre, especieSeleccionada, hormigas, listo])
 
   return (
     <div className="relative w-full h-full">
@@ -563,9 +708,9 @@ export default function MapaEcuador({
           <p className="text-green-700 text-sm font-medium">Cargando mapa interactivo...</p>
         </div>
       )}
-      {!provinciaSeleccionada && (
+      {!provinciaSeleccionada && !especieSeleccionada && (
         <div className="absolute bottom-4 right-4 z-10 bg-white/90 backdrop-blur-sm text-gray-500 text-xs px-3 py-2 rounded-lg shadow-sm border border-gray-200 pointer-events-none">
-          Selecciona una provincia para explorar
+          Selecciona una opción para explorar
         </div>
       )}
     </div>

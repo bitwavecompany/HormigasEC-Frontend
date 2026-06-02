@@ -1,17 +1,16 @@
 export interface Hormiga {
-  id: number
-  nombre_comun: string
-  nombre_cientifico: string
-  subfamilia: string
+  comun_name_ant: string
+  scientific_name_ant: string
   region: string
-  provincia: string
-  parroquia?: string
-  altitud_m: number
-  latitud: number
-  longitud: number
-  descripcion: string
-  imagen_url: string
-  color_hex: string
+  province: string
+  parish?: string
+  species: string
+  latitude: number
+  longitude: number
+  endemic: boolean
+  description: string
+  dataSource: string
+  color_hex?: string
 }
 
 export interface ParroquiaProperties {

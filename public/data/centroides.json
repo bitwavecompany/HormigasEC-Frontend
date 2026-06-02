@@ -17,7 +17,7 @@
     {
       "type": "Feature",
       "properties": {
-        "NAME_1": "Bolivar"
+        "NAME_1": "Bolívar"
       },
       "geometry": {
         "type": "Point",
@@ -82,7 +82,7 @@
     {
       "type": "Feature",
       "properties": {
-        "NAME_1": "ElOro"
+        "NAME_1": "El Oro"
       },
       "geometry": {
         "type": "Point",
@@ -160,7 +160,7 @@
     {
       "type": "Feature",
       "properties": {
-        "NAME_1": "LosRios"
+        "NAME_1": "Los Ríos"
       },
       "geometry": {
         "type": "Point",
@@ -173,7 +173,7 @@
     {
       "type": "Feature",
       "properties": {
-        "NAME_1": "Manabi"
+        "NAME_1": "Manabí"
       },
       "geometry": {
         "type": "Point",
@@ -186,7 +186,7 @@
     {
       "type": "Feature",
       "properties": {
-        "NAME_1": "MoronaSantiago"
+        "NAME_1": "Morona Santiago"
       },
       "geometry": {
         "type": "Point",
@@ -251,7 +251,7 @@
     {
       "type": "Feature",
       "properties": {
-        "NAME_1": "SantaElena"
+        "NAME_1": "Santa Elena"
       },
       "geometry": {
         "type": "Point",
@@ -264,7 +264,7 @@
     {
       "type": "Feature",
       "properties": {
-        "NAME_1": "SantoDomingodelosTsachilas"
+        "NAME_1": "Santo Domingo de los Tsáchilas"
       },
       "geometry": {
         "type": "Point",
@@ -277,7 +277,7 @@
     {
       "type": "Feature",
       "properties": {
-        "NAME_1": "Sucumbios"
+        "NAME_1": "Sucumbíos"
       },
       "geometry": {
         "type": "Point",
@@ -303,7 +303,7 @@
     {
       "type": "Feature",
       "properties": {
-        "NAME_1": "ZamoraChinchipe"
+        "NAME_1": "Zamora Chinchipe"
       },
       "geometry": {
         "type": "Point",
