@@ -3,8 +3,6 @@ import type { AuditEntry, ErrorDetalleSubida, AuditAction } from '../types'
 
 const STORAGE_KEY = 'hormigas_audit_log'
 
-// ─── Seed data ────────────────────────────────────────────────────────────────
-
 function makeDate(daysAgo: number, hour: number, min: number): string {
   const d = new Date()
   d.setDate(d.getDate() - daysAgo)
@@ -168,8 +166,6 @@ function buildSeed(): AuditEntry[] {
   ]
 }
 
-// ─── Persistencia ────────────────────────────────────────────────────────────
-
 function loadEntries(): AuditEntry[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -193,8 +189,6 @@ function loadEntries(): AuditEntry[] {
 function saveEntries(entries: AuditEntry[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
 }
-
-// ─── Hook ────────────────────────────────────────────────────────────────────
 
 export interface AddEntryPayload {
   nombreUsuario: string

@@ -24,7 +24,7 @@ export async function uploadExcel(file: File, title: string): Promise<ExcelFileR
   formData.append('title', title)
   return apiFetch<ExcelFileRead>('/excels', {
     method: 'POST',
-    headers: getBearerHeaders(), // NO Content-Type header — browser sets multipart boundary
+    headers: getBearerHeaders(), 
     body: formData,
   })
 }

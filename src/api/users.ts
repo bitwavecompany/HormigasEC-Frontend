@@ -8,8 +8,6 @@ export interface UserRead {
   is_active: boolean
 }
 
-// Backend UserUpdate only accepts: full_name, role, is_active
-// email and password are NOT supported by the backend PATCH /users/{id} (TODO in backend)
 export interface UpdateUserRequest {
   full_name?: string
   role?: 'admin' | 'researcher' | 'viewer'
@@ -22,10 +20,6 @@ export async function listUsers(): Promise<UserRead[]> {
     headers: getAuthHeaders(),
   })
 }
-
-// NOTE: PATCH /users/{id} and DELETE /users/{id} are TODO in the backend.
-// These functions are defined here for when the backend implements them.
-// They will return 404/405 until the backend is ready.
 
 export async function updateUser(id: number, data: UpdateUserRequest): Promise<UserRead> {
   return apiFetch<UserRead>(`/users/${id}`, {
@@ -52,7 +46,6 @@ export async function deleteUser(id: number): Promise<void> {
   }
 }
 
-// createUser uses POST /auth/register — backend accepts email, password, full_name, role
 export async function createUser(data: { email: string; password: string; full_name: string; role: 'admin' | 'researcher' | 'viewer' }): Promise<UserRead> {
   return apiFetch<UserRead>('/auth/register', {
     method: 'POST',

@@ -1,4 +1,3 @@
-// fix-centroides.cjs
 const { readFileSync, writeFileSync } = require('fs')
 
 const data = JSON.parse(readFileSync('public/data/provincias.json', 'utf8'))
@@ -6,7 +5,6 @@ const data = JSON.parse(readFileSync('public/data/provincias.json', 'utf8'))
 const centroides = {
   type: 'FeatureCollection',
   features: data.features.map(feature => {
-    // Aplanar todas las coordenadas del MultiPolygon
     const aplanar = (arr) => {
       if (typeof arr[0] === 'number') return [arr]
       return arr.flatMap(aplanar)

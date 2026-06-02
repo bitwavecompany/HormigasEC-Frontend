@@ -5,6 +5,7 @@ export interface Hormiga {
   subfamilia: string
   region: string
   provincia: string
+  parroquia?: string
   altitud_m: number
   latitud: number
   longitud: number
@@ -13,7 +14,12 @@ export interface Hormiga {
   color_hex: string
 }
 
-// ─── Auditoría / Historial ────────────────────────────────────────────────────
+export interface ParroquiaProperties {
+  NAME_1: string  
+  NAME_2: string   
+  NAME_3: string   
+  CC_3:   string  
+}
 
 export type AuditAction =
   | 'subir_documento'
@@ -36,12 +42,11 @@ export interface ErrorDetalleSubida {
 
 export interface AuditEntry {
   id: string
-  fecha: string                            // ISO string
+  fecha: string                     
   nombreUsuario: string
   email: string
   rol: 'admin' | 'researcher' | 'viewer'
   accion: AuditAction
-  // Solo presente en acción subir_documento
   estadoSubida?: 'ok' | 'error'
   errorDetalle?: ErrorDetalleSubida
 }

@@ -1,6 +1,6 @@
 const { readFileSync, writeFileSync } = require('fs')
 
-const OFFSET_LNG = -0.8  // mueve 0.8 grados al oeste desde posición actual
+const OFFSET_LNG = -0.8 
 
 const data = JSON.parse(readFileSync('public/data/provincias.json', 'utf8'))
 

@@ -20,8 +20,6 @@ import { useAuditLog } from '../../hooks/useAuditLog'
 import ErrorDetalleModal from '../../components/ErrorDetalleModal'
 import type { AuditAction, AuditEntry, ErrorDetalleSubida } from '../../types'
 
-// ─── Constantes de presentación ──────────────────────────────────────────────
-
 const ACCION_LABELS: Record<AuditAction, string> = {
   subir_documento: 'Subir documento',
   eliminar_documento: 'Eliminar documento',
@@ -73,8 +71,6 @@ const ACCION_OPTIONS: { value: '' | AuditAction; label: string }[] = [
 
 const PAGE_SIZE = 10
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 function formatFecha(iso: string): { fecha: string; hora: string } {
   const d = new Date(iso)
   return {
@@ -94,23 +90,17 @@ function isSameDay(iso: string, dateStr: string): boolean {
   )
 }
 
-// ─── Componente principal ─────────────────────────────────────────────────────
-
 export default function HistorialModule() {
   const { entries } = useAuditLog()
 
-  // Filtros
   const [busqueda, setBusqueda] = useState('')
   const [filtroAccion, setFiltroAccion] = useState<'' | AuditAction>('')
   const [filtroFecha, setFiltroFecha] = useState('')
 
-  // Paginación
   const [pagina, setPagina] = useState(1)
 
-  // Modal de error
   const [modalDetalle, setModalDetalle] = useState<ErrorDetalleSubida | null>(null)
 
-  // ─── Filtrado ───────────────────────────────────────────────────────────────
   const entradsFiltradas = useMemo(() => {
     return entries.filter(e => {
       const matchBusqueda =
@@ -317,7 +307,6 @@ export default function HistorialModule() {
         )}
       </div>
 
-      {/* ── Modal detalle de error ───────────────────────────────────────── */}
       <ErrorDetalleModal
         open={modalDetalle !== null}
         detalle={modalDetalle}
@@ -326,9 +315,6 @@ export default function HistorialModule() {
     </div>
   )
 }
-
-// ─── Fila de la tabla ─────────────────────────────────────────────────────────
-
 interface FilaProps {
   entry: AuditEntry
   striped: boolean
@@ -392,9 +378,6 @@ function FilaAuditoria({ entry, striped, onVerError }: FilaProps) {
     </tr>
   )
 }
-
-// ─── Celda de estado ──────────────────────────────────────────────────────────
-
 interface EstadoProps {
   estado: 'ok' | 'error'
   detalle: ErrorDetalleSubida | null

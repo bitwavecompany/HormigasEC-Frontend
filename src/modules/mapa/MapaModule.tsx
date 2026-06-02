@@ -10,6 +10,9 @@ export default function MapaModule() {
   const [hormigasEnProvincia, setHormigasEnProvincia] = useState<Hormiga[]>([])
   const [hormigaDetalle, setHormigaDetalle] = useState<Hormiga | null>(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+  const [parroquiaSeleccionada, setParroquiaSeleccionada] = useState<string | null>(null)
+  const [parroquiaNombre, setParroquiaNombre] = useState<string | null>(null)
+  const [cantonNombre, setCantonNombre] = useState<string | null>(null)
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth < 768)
@@ -24,9 +27,46 @@ export default function MapaModule() {
   }, [])
 
   const handleProvinciaClick = (provincia: string, encontradas: Hormiga[]) => {
+    if (provinciaSeleccionada === provincia) {
+      setProvinciaSeleccionada(null)
+      setHormigasEnProvincia([])
+      setHormigaDetalle(null)
+      setParroquiaSeleccionada(null)
+      setParroquiaNombre(null)
+      setCantonNombre(null)
+      return
+    }
     setProvinciaSeleccionada(provincia)
     setHormigasEnProvincia(encontradas)
     setHormigaDetalle(null)
+    setParroquiaSeleccionada(null)
+    setParroquiaNombre(null)
+    setCantonNombre(null)
+  }
+
+  const handleParroquiaClick = (codigo: string | null, nombre: string | null, canton: string | null) => {
+    setParroquiaSeleccionada(codigo)
+    setParroquiaNombre(nombre)
+    setCantonNombre(canton)
+    setHormigaDetalle(null)
+    
+    if (nombre) {
+      const encontradas = hormigas.filter(h => h.parroquia === nombre)
+      setHormigasEnProvincia(encontradas)
+    } else if (provinciaSeleccionada) {
+      // Si se deselecciona la parroquia (ej. al hacer zoom out), mostramos todas las de la provincia
+      const encontradas = hormigas.filter(h => h.provincia === provinciaSeleccionada)
+      setHormigasEnProvincia(encontradas)
+    }
+  }
+
+  const handleVolverAProvincia = () => {
+    setParroquiaSeleccionada(null)
+    setParroquiaNombre(null)
+    setCantonNombre(null)
+    setHormigaDetalle(null)
+    const encontradas = hormigas.filter(h => h.provincia === provinciaSeleccionada)
+    setHormigasEnProvincia(encontradas)
   }
 
   return (
@@ -36,6 +76,9 @@ export default function MapaModule() {
           hormigas={hormigas}
           onProvinciaClick={handleProvinciaClick}
           provinciaSeleccionada={provinciaSeleccionada}
+          onParroquiaClick={handleParroquiaClick}
+          parroquiaSeleccionada={parroquiaSeleccionada}
+          parroquiaNombre={parroquiaNombre}
         />
       </div>
 
@@ -85,7 +128,7 @@ export default function MapaModule() {
                 onClick={() => setHormigaDetalle(null)}
                 className="text-xs text-gray-500 hover:text-green-700 mb-4 flex items-center gap-1 transition-colors"
               >
-                ← Volver a {provinciaSeleccionada}
+                ← Volver a {parroquiaNombre ?? provinciaSeleccionada}
               </button>
 
               {hormigaDetalle.imagen_url ? (
@@ -135,7 +178,22 @@ export default function MapaModule() {
               className="flex-1 overflow-y-auto"
             >
               <div className="p-4 border-b border-border bg-surface-muted">
-                <p className="text-gray-800 font-semibold text-sm">{provinciaSeleccionada}</p>
+                {parroquiaNombre ? (
+                  <>
+                    <button
+                      onClick={handleVolverAProvincia}
+                      className="text-xs text-gray-500 hover:text-green-700 mb-2 flex items-center gap-1 transition-colors"
+                    >
+                      ← {provinciaSeleccionada}
+                    </button>
+                    <p className="text-gray-800 font-semibold text-sm">{parroquiaNombre}</p>
+                    {cantonNombre && (
+                      <p className="text-gray-500 text-xs mt-0.5">Cantón {cantonNombre}</p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-gray-800 font-semibold text-sm">{provinciaSeleccionada}</p>
+                )}
                 <p className="text-gray-500 text-xs mt-0.5">
                   {hormigasEnProvincia.length} especie{hormigasEnProvincia.length !== 1 ? 's' : ''} registrada{hormigasEnProvincia.length !== 1 ? 's' : ''}
                 </p>
@@ -211,7 +269,7 @@ export default function MapaModule() {
                   onClick={() => setHormigaDetalle(null)}
                   className="text-xs text-gray-500 hover:text-green-700 mb-4 flex items-center gap-1 transition-colors"
                 >
-                  ← Volver a {provinciaSeleccionada}
+                  ← Volver a {parroquiaNombre ?? provinciaSeleccionada}
                 </button>
 
                 {hormigaDetalle.imagen_url ? (
@@ -261,7 +319,22 @@ export default function MapaModule() {
                 className="flex-1 overflow-y-auto"
               >
                 <div className="p-4 border-b border-border bg-surface-muted">
-                  <p className="text-gray-800 font-semibold text-sm">{provinciaSeleccionada}</p>
+                  {parroquiaNombre ? (
+                    <>
+                      <button
+                        onClick={handleVolverAProvincia}
+                        className="text-xs text-gray-500 hover:text-green-700 mb-2 flex items-center gap-1 transition-colors"
+                      >
+                        ← {provinciaSeleccionada}
+                      </button>
+                      <p className="text-gray-800 font-semibold text-sm">{parroquiaNombre}</p>
+                      {cantonNombre && (
+                        <p className="text-gray-500 text-xs mt-0.5">Cantón {cantonNombre}</p>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-gray-800 font-semibold text-sm">{provinciaSeleccionada}</p>
+                  )}
                   <p className="text-gray-500 text-xs mt-0.5">
                     {hormigasEnProvincia.length} especie{hormigasEnProvincia.length !== 1 ? 's' : ''} registrada{hormigasEnProvincia.length !== 1 ? 's' : ''}
                   </p>
