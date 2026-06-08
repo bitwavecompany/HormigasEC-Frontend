@@ -14,19 +14,34 @@ export interface UpdateUserRequest {
   is_active?: boolean
 }
 
-export async function listUsers(): Promise<UserRead[]> {
-  return apiFetch<UserRead[]>('/users', {
+export interface ApiResponse<T> {
+  message: string
+  data: T
+}
+
+export async function getMe(): Promise<UserRead> {
+  const res = await apiFetch<ApiResponse<UserRead>>('/users/me', {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  return res.data 
+}
+
+export async function listUsers(): Promise<UserRead[]> {
+  const res = await apiFetch<ApiResponse<UserRead[]>>('/users', {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  })
+  return res.data
 }
 
 export async function updateUser(id: number, data: UpdateUserRequest): Promise<UserRead> {
-  return apiFetch<UserRead>(`/users/${id}`, {
+  const res = await apiFetch<ApiResponse<UserRead>>(`/users/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify(data),
   })
+  return res.data
 }
 
 export async function deleteUser(id: number): Promise<void> {
@@ -42,14 +57,15 @@ export async function deleteUser(id: number): Promise<void> {
   }
   if (!response.ok) {
     const error = await response.json().catch(() => ({}))
-    throw new Error(error?.detail ?? 'Error al eliminar usuario')
+    throw new Error(error?.detail ?? 'Error al desactivar usuario')
   }
 }
 
 export async function createUser(data: { email: string; password: string; full_name: string; role: 'admin' | 'researcher' | 'viewer' }): Promise<UserRead> {
-  return apiFetch<UserRead>('/auth/register', {
+  const res = await apiFetch<ApiResponse<UserRead>>('/auth/register', {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({ email: data.email, password: data.password, full_name: data.full_name, role: data.role }),
   })
+  return res.data
 }

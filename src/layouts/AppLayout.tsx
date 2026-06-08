@@ -10,11 +10,20 @@ const ROLE_LABELS: Record<string, string> = {
   viewer: 'Visitante',
 }
 
-const NAV_ITEMS = [
-  { to: '/app/mapa', icon: Map, label: 'Mapa' },
-  { to: '/app/usuarios', icon: Users, label: 'Usuarios' },
-  { to: '/app/archivos', icon: FolderOpen, label: 'Archivos' },
-  { to: '/app/historial', icon: ClipboardList, label: 'Historial' },
+type Role = 'admin' | 'researcher' | 'viewer'
+
+interface NavItem {
+  to: string
+  icon: React.ElementType
+  label: string
+  roles: Role[]
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { to: '/app/mapa', icon: Map, label: 'Mapa', roles: ['admin', 'researcher', 'viewer'] },
+  { to: '/app/usuarios', icon: Users, label: 'Usuarios', roles: ['admin'] },
+  { to: '/app/archivos', icon: FolderOpen, label: 'Archivos', roles: ['admin', 'researcher'] },
+  { to: '/app/historial', icon: ClipboardList, label: 'Historial', roles: ['admin'] },
 ]
 
 const SIDEBAR_INTERACTIVE_ZONES: Array<{ yStart: number; yEnd: number }> = [
@@ -40,6 +49,10 @@ export default function AppLayout() {
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  const navVisibles = NAV_ITEMS.filter(item =>
+    user ? item.roles.includes(user.role) : false
+  )
 
   return (
     <div className="h-screen flex overflow-hidden bg-surface">
@@ -75,7 +88,7 @@ export default function AppLayout() {
         </div>
 
         <nav className="flex-1 px-2 py-2 flex flex-col gap-1">
-          {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
+          {navVisibles.map(({ to, icon: Icon, label }) => (
             <NavLink
               key={to}
               to={to}
@@ -159,7 +172,7 @@ export default function AppLayout() {
           className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch"
           style={{ background: '#166534', height: '60px' }}
         >
-          {NAV_ITEMS.map(({ to, icon: Icon, label }) => (
+          {navVisibles.map(({ to, icon: Icon, label }) => (
             <NavLink key={to} to={to} className="flex-1">
               {({ isActive }) => (
                 <div

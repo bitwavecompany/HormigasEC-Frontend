@@ -20,16 +20,23 @@ export default function App() {
 
           <Route element={<ProtectedRoute />}>
             <Route path="/app" element={<AppLayout />}>
-              <Route path="mapa" element={<MapaModule />} />
-              <Route path="usuarios" element={<UsuariosModule />} />
-              <Route path="archivos" element={<ArchivosModule />} />
-              <Route path="historial" element={<HistorialModule />} />
+              <Route element={<ProtectedRoute roles={['admin', 'researcher', 'viewer']} />}>
+                <Route path="mapa" element={<MapaModule />} />
+              </Route>
+              <Route element={<ProtectedRoute roles={['admin']} />}>
+                <Route path="usuarios" element={<UsuariosModule />} />
+              </Route>
+              <Route element={<ProtectedRoute roles={['admin', 'researcher']} />}>
+                <Route path="archivos" element={<ArchivosModule />} />
+              </Route>
+              <Route element={<ProtectedRoute roles={['admin']} />}>
+                <Route path="historial" element={<HistorialModule />} />
+              </Route>
               <Route index element={<Navigate to="mapa" replace />} />
             </Route>
           </Route>
 
           <Route path="/" element={<AuthRedirect />} />
-
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

@@ -1,7 +1,8 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { jwtDecode } from 'jwt-decode'
 import { login as loginService } from '../api/auth'
+import { getMe } from '../api/users'
 import { AuthContext } from '../context/AuthContext'
 import type { AuthContextValue, Usuario } from '../context/AuthContext'
 
@@ -14,43 +15,62 @@ interface JwtPayload {
   exp: number
 }
 
-function decodeUsuario(token: string): Usuario | null {
+function getTokenFromStorage(): string | null {
+  const token = localStorage.getItem(TOKEN_KEY)
+  if (!token) return null
   try {
     const payload = jwtDecode<JwtPayload>(token)
     const ahora = Math.floor(Date.now() / 1000)
-    if (payload.exp < ahora) return null
-    return { id: payload.sub, email: payload.email, role: payload.role }
+    if (payload.exp < ahora) {
+      localStorage.removeItem(TOKEN_KEY)
+      return null
+    }
+    return token
   } catch {
-    console.error('Error al decodificar token')
-    return null
-  }
-}
-
-function initToken(): string | null {
-  const token = localStorage.getItem(TOKEN_KEY)
-  if (!token) return null
-  const usuario = decodeUsuario(token)
-  if (!usuario) {
     localStorage.removeItem(TOKEN_KEY)
     return null
   }
-  return token
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(initToken)
-  const [user, setUser] = useState<Usuario | null>(() => {
-    const t = localStorage.getItem(TOKEN_KEY)
-    return t ? decodeUsuario(t) : null
-  })
+  const [token, setToken] = useState<string | null>(getTokenFromStorage)
+  const [user, setUser] = useState<Usuario | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(() => !!getTokenFromStorage())
+
+  useEffect(() => {
+    const storedToken = getTokenFromStorage()
+    if (!storedToken) return
+
+    getMe()
+      .then(perfil => {
+        setUser({
+          id: String(perfil.id),
+          email: perfil.email,
+          full_name: perfil.full_name,
+          role: perfil.role,
+          is_active: perfil.is_active,
+        })
+      })
+      .catch(() => {
+        localStorage.removeItem(TOKEN_KEY)
+        setToken(null)
+        setUser(null)
+      })
+      .finally(() => setIsLoading(false))
+  }, [])
 
   const login = useCallback(async (email: string, password: string) => {
     const response = await loginService({ email, password })
-    const usuario = decodeUsuario(response.access_token)
-    if (!usuario) throw new Error('Token inválido recibido del servidor')
     localStorage.setItem(TOKEN_KEY, response.access_token)
     setToken(response.access_token)
-    setUser(usuario)
+    const perfil = await getMe()
+    setUser({
+      id: String(perfil.id),
+      email: perfil.email,
+      full_name: perfil.full_name,
+      role: perfil.role,
+      is_active: perfil.is_active,
+    })
   }, [])
 
   const logout = useCallback(() => {
@@ -63,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     token,
     isAuthenticated: !!token && !!user,
-    isLoading: false,
+    isLoading,
     login,
     logout,
   }

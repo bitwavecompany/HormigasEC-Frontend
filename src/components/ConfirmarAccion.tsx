@@ -8,17 +8,28 @@ interface Props {
   onConfirm: () => void
   onClose: () => void
   loading?: boolean
+  confirmText?: string
+  loadingText?: string
+  theme?: 'danger' | 'brand'
 }
 
-export default function ConfirmarEliminar({
+export default function ConfirmarAccion({
   open,
   titulo,
   descripcion,
   onConfirm,
   onClose,
   loading = false,
+  confirmText = 'Confirmar',
+  loadingText = 'Procesando...',
+  theme = 'danger',
 }: Props) {
   if (!open) return null
+
+  const themeClasses = theme === 'danger'
+    ? 'bg-danger text-white hover:bg-red-700'
+    : 'bg-[#166534] text-white hover:bg-[#14532d]'
+
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose} />
@@ -41,9 +52,9 @@ export default function ConfirmarEliminar({
             <button
               onClick={onConfirm}
               disabled={loading}
-              className="text-sm font-medium bg-danger text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className={`text-sm font-medium px-4 py-2 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${themeClasses}`}
             >
-              {loading ? 'Eliminando…' : 'Eliminar'}
+              {loading ? loadingText : confirmText}
             </button>
           </div>
         </div>

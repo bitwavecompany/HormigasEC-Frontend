@@ -111,7 +111,7 @@ function buildSeed(): AuditEntry[] {
       nombreUsuario: 'Carlos Mendoza',
       email: 'cmendoza@uce.edu.ec',
       rol: 'admin',
-      accion: 'eliminar_usuario',
+      accion: 'desactivar_usuario',
     },
     {
       id: 'seed-11',

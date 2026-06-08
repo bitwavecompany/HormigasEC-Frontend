@@ -5,17 +5,21 @@ export interface LoginRequest {
   password: string
 }
 
-export interface LoginResponse {
-  access_token: string
-  token_type: 'bearer'
+export interface LoginApiResponse {
+  message: string
+  data: {
+    access_token: string
+    token_type: 'bearer'
+  }
 }
 
-export async function login(data: LoginRequest): Promise<LoginResponse> {
-  return apiFetch<LoginResponse>('/auth/login', {
+export async function login(data: LoginRequest): Promise<{ access_token: string; token_type: 'bearer' }> {
+  const response = await apiFetch<LoginApiResponse>('/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
+  return response.data
 }
 
 export interface RegisterRequest {

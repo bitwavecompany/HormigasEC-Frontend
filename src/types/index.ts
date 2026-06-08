@@ -26,7 +26,7 @@ export type AuditAction =
   | 'eliminar_documento'
   | 'editar_documento'
   | 'crear_usuario'
-  | 'eliminar_usuario'
+  | 'desactivar_usuario'
   | 'editar_usuario'
 
 export interface ErrorColumna {

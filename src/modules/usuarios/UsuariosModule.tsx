@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { UserPlus, X, Pencil, Trash2, CircleUserRound } from 'lucide-react'
-import { listUsers, createUser, updateUser, deleteUser } from '../../api/users'
+import { UserPlus, X, Pencil, CircleUserRound } from 'lucide-react'
+import { listUsers, createUser, updateUser } from '../../api/users'
 import type { UserRead } from '../../api/users'
-import ConfirmarEliminar from '../../components/ConfirmarEliminar'
+import ConfirmarAccion from '../../components/ConfirmarAccion'
 
 const ROL_LABELS: Record<string, string> = {
   admin: 'Administrador',
@@ -43,8 +43,9 @@ export default function UsuariosModule() {
   const [editRole, setEditRole] = useState<'admin' | 'researcher' | 'viewer'>('viewer')
   const [saving, setSaving] = useState(false)
 
-  const [deleteTarget, setDeleteTarget] = useState<UserRead | null>(null)
-  const [deleting, setDeleting] = useState(false)
+  // Estados para Activar/Desactivar
+  const [toggleTarget, setToggleTarget] = useState<UserRead | null>(null)
+  const [toggling, setToggling] = useState(false)
 
   useEffect(() => {
     listUsers()
@@ -93,19 +94,20 @@ export default function UsuariosModule() {
     }
   }
 
-  const handleDelete = async () => {
-    if (!deleteTarget) return
-    setDeleting(true)
-    try {
-      await deleteUser(deleteTarget.id)
-      setUsers(prev => prev.filter(u => u.id !== deleteTarget.id))
-      toast.success('Usuario eliminado')
-      setDeleteTarget(null)
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : 'Error al eliminar')
-    } finally {
-      setDeleting(false)
-    }
+  // Simulación a nivel Frontend de Activar/Desactivar
+  const handleToggleStatus = async () => {
+    if (!toggleTarget) return
+    setToggling(true)
+    
+    // Simulamos un breve delay para que se sienta fluido
+    setTimeout(() => {
+      setUsers(prev => prev.map(u => 
+        u.id === toggleTarget.id ? { ...u, is_active: !u.is_active } : u
+      ))
+      toast.success(toggleTarget.is_active ? 'Usuario desactivado' : 'Usuario activado')
+      setToggleTarget(null)
+      setToggling(false)
+    }, 400)
   }
 
   const handleCreate = async () => {
@@ -159,6 +161,7 @@ export default function UsuariosModule() {
                     <td className="px-4 py-3"><div className="h-4 bg-surface-muted rounded animate-pulse w-48" /></td>
                     <td className="px-4 py-3"><div className="h-4 bg-surface-muted rounded animate-pulse w-20" /></td>
                     <td className="px-4 py-3"><div className="h-4 bg-surface-muted rounded animate-pulse w-16" /></td>
+                    <td className="px-4 py-3"><div className="h-4 bg-surface-muted rounded animate-pulse w-16" /></td>
                   </tr>
                 ))
               ) : users.length === 0 ? (
@@ -167,10 +170,17 @@ export default function UsuariosModule() {
                 </tr>
               ) : (
                 users.map(u => (
-                  <tr key={u.id} className="border-b border-border hover:bg-surface-muted transition-colors">
-                    <td className="px-4 py-3 text-ink">{u.full_name}</td>
-                    <td className="px-4 py-3 text-ink">{u.email}</td>
-                    <td className="px-4 py-3">
+                  <tr 
+                    key={u.id} 
+                    className={`border-b border-border hover:bg-surface-muted transition-colors ${!u.is_active ? 'bg-gray-50/50' : ''}`}
+                  >
+                    <td className={`px-4 py-3 text-ink transition-all ${!u.is_active ? 'line-through text-gray-400 opacity-70' : ''}`}>
+                      {u.full_name}
+                    </td>
+                    <td className={`px-4 py-3 text-ink transition-all ${!u.is_active ? 'line-through text-gray-400 opacity-70' : ''}`}>
+                      {u.email}
+                    </td>
+                    <td className={`px-4 py-3 transition-opacity ${!u.is_active ? 'opacity-60' : ''}`}>
                       <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${ROL_CLASSES[u.role] ?? 'bg-surface-muted text-ink-muted'}`}>
                         {formatRol(u.role)}
                       </span>
@@ -179,24 +189,29 @@ export default function UsuariosModule() {
                       {u.is_active ? (
                         <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-brand-light text-brand-dark">Activo</span>
                       ) : (
-                        <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-600">Inactivo</span>
+                        <span className="inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">Inactivo</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-3">
                         <button
-                          onClick={() => handleOpenEdit(u)}
-                          title="Editar"
-                          className="p-1.5 rounded-md text-ink-muted hover:text-[#166534] hover:bg-brand-light transition-colors"
+                          onClick={() => u.is_active && handleOpenEdit(u)}
+                          title={u.is_active ? "Editar" : "Usuario inactivo"}
+                          disabled={!u.is_active}
+                          className={`p-1.5 rounded-md transition-colors ${u.is_active ? 'text-ink-muted hover:text-[#166534] hover:bg-brand-light cursor-pointer' : 'text-gray-300 cursor-not-allowed'}`}
                         >
                           <Pencil size={15} />
                         </button>
+                        
+                        {/* Switch de Activar/Desactivar */}
                         <button
-                          onClick={() => setDeleteTarget(u)}
-                          title="Eliminar"
-                          className="p-1.5 rounded-md text-ink-muted hover:text-danger hover:bg-danger-subtle transition-colors"
+                          onClick={() => setToggleTarget(u)}
+                          title={u.is_active ? "Desactivar usuario" : "Activar usuario"}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${u.is_active ? 'bg-[#166534]' : 'bg-gray-300'}`}
                         >
-                          <Trash2 size={15} />
+                          <span 
+                            className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 ease-in-out ${u.is_active ? 'translate-x-4.5' : 'translate-x-1'}`} 
+                          />
                         </button>
                       </div>
                     </td>
@@ -208,6 +223,7 @@ export default function UsuariosModule() {
         </div>
       </div>
 
+      {/* MODAL CREAR */}
       {modalOpen && (
         <>
           <div className="fixed inset-0 bg-black/40 z-40" onClick={handleCloseModal} />
@@ -287,6 +303,7 @@ export default function UsuariosModule() {
         </>
       )}
 
+      {/* MODAL EDITAR */}
       {editTarget && (
         <>
           <div className="fixed inset-0 bg-black/40 z-40" onClick={handleCloseEdit} />
@@ -345,17 +362,21 @@ export default function UsuariosModule() {
         </>
       )}
 
-      <ConfirmarEliminar
-        open={!!deleteTarget}
-        titulo="Eliminar usuario"
+      {/* MODAL ACTIVAR / DESACTIVAR */}
+      <ConfirmarAccion
+        open={!!toggleTarget}
+        titulo={toggleTarget?.is_active ? "Desactivar usuario" : "Activar usuario"}
         descripcion={
-          deleteTarget
-            ? <>¿Eliminar a <span className="font-medium text-ink">{deleteTarget.full_name}</span>? Esta acción no se puede deshacer.</>
+          toggleTarget
+            ? <>¿Estás seguro de que deseas <span className="font-medium text-ink">{toggleTarget.is_active ? 'desactivar' : 'activar'}</span> a <span className="font-medium text-ink">{toggleTarget.full_name}</span>?</>
             : null
         }
-        onConfirm={handleDelete}
-        onClose={() => setDeleteTarget(null)}
-        loading={deleting}
+        onConfirm={handleToggleStatus}
+        onClose={() => setToggleTarget(null)}
+        loading={toggling}
+        confirmText={toggleTarget?.is_active ? 'Desactivar' : 'Activar'}
+        loadingText={toggleTarget?.is_active ? 'Desactivando...' : 'Activando...'}
+        theme={toggleTarget?.is_active ? 'danger' : 'brand'}
       />
     </div>
   )

@@ -11,30 +11,39 @@ export interface ExcelFileRead {
   updated_at: string
 }
 
+interface ApiResponse<T> {
+  message: string
+  data: T
+}
+
 export async function listExcels(): Promise<ExcelFileRead[]> {
-  return apiFetch<ExcelFileRead[]>('/excels', {
+  const res = await apiFetch<ApiResponse<ExcelFileRead[]>>('/excels', {
     method: 'GET',
     headers: getAuthHeaders(),
   })
+  return res.data 
 }
 
 export async function uploadExcel(file: File, title: string): Promise<ExcelFileRead> {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('title', title)
-  return apiFetch<ExcelFileRead>('/excels', {
+  
+  const res = await apiFetch<ApiResponse<ExcelFileRead>>('/excels', {
     method: 'POST',
     headers: getBearerHeaders(), 
     body: formData,
   })
+  return res.data
 }
 
 export async function renameExcel(id: number, fileName: string): Promise<ExcelFileRead> {
-  return apiFetch<ExcelFileRead>(`/excels/${id}`, {
+  const res = await apiFetch<ApiResponse<ExcelFileRead>>(`/excels/${id}`, {
     method: 'PATCH',
     headers: getAuthHeaders(),
     body: JSON.stringify({ title: fileName }),
   })
+  return res.data
 }
 
 export async function downloadExcel(id: number, fileName: string): Promise<void> {

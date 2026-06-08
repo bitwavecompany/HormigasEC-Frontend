@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
+  AlertCircle 
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useAuditLog } from '../../hooks/useAuditLog'
@@ -25,7 +26,7 @@ const ACCION_LABELS: Record<AuditAction, string> = {
   eliminar_documento: 'Eliminar documento',
   editar_documento: 'Editar documento',
   crear_usuario: 'Crear usuario',
-  eliminar_usuario: 'Eliminar usuario',
+  desactivar_usuario: 'Desactivar usuario',
   editar_usuario: 'Editar usuario',
 }
 
@@ -34,7 +35,7 @@ const ACCION_ICONS: Record<AuditAction, LucideIcon> = {
   eliminar_documento: Trash2,
   editar_documento: Pencil,
   crear_usuario: UserPlus,
-  eliminar_usuario: UserMinus,
+  desactivar_usuario: UserMinus,
   editar_usuario: UserCog,
 }
 
@@ -43,7 +44,7 @@ const ACCION_COLORS: Record<AuditAction, string> = {
   eliminar_documento: 'text-danger',
   editar_documento: 'text-blue-600',
   crear_usuario: 'text-brand',
-  eliminar_usuario: 'text-danger',
+  desactivar_usuario: 'text-danger',
   editar_usuario: 'text-blue-600',
 }
 
@@ -65,7 +66,7 @@ const ACCION_OPTIONS: { value: '' | AuditAction; label: string }[] = [
   { value: 'eliminar_documento', label: 'Eliminar documento' },
   { value: 'editar_documento', label: 'Editar documento' },
   { value: 'crear_usuario', label: 'Crear usuario' },
-  { value: 'eliminar_usuario', label: 'Eliminar usuario' },
+  { value: 'desactivar_usuario', label: 'Desactivar usuario' },
   { value: 'editar_usuario', label: 'Editar usuario' },
 ]
 
@@ -126,7 +127,6 @@ export default function HistorialModule() {
   return (
     <div className="h-full flex flex-col gap-0 overflow-hidden">
 
-      {/* ── Cabecera ─────────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 px-6 pt-6 pb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div
@@ -149,9 +149,7 @@ export default function HistorialModule() {
         </span>
       </div>
 
-      {/* ── Barra de filtros ─────────────────────────────────────────────── */}
       <div className="flex-shrink-0 px-6 pb-4 flex flex-wrap gap-3">
-        {/* Búsqueda */}
         <div className="relative flex-1 min-w-48">
           <Search
             size={14}
@@ -166,7 +164,6 @@ export default function HistorialModule() {
           />
         </div>
 
-        {/* Filtro acción */}
         <div className="relative">
           <Filter
             size={14}
@@ -183,7 +180,6 @@ export default function HistorialModule() {
           </select>
         </div>
 
-        {/* Filtro fecha */}
         <div>
           <input
             type="date"
@@ -193,7 +189,6 @@ export default function HistorialModule() {
           />
         </div>
 
-        {/* Limpiar filtros */}
         {(busqueda || filtroAccion || filtroFecha) && (
           <button
             onClick={() => {
@@ -209,7 +204,6 @@ export default function HistorialModule() {
         )}
       </div>
 
-      {/* ── Tabla ────────────────────────────────────────────────────────── */}
       <div className="flex-1 px-6 pb-6 overflow-auto min-h-0">
         <div
           className="bg-surface-card rounded-2xl overflow-hidden"
@@ -256,7 +250,6 @@ export default function HistorialModule() {
           </table>
         </div>
 
-        {/* ── Paginación ──────────────────────────────────────────────────── */}
         {totalPaginas > 1 && (
           <div className="flex items-center justify-between mt-4 px-1">
             <span className="text-xs text-ink-muted">
@@ -315,6 +308,7 @@ export default function HistorialModule() {
     </div>
   )
 }
+
 interface FilaProps {
   entry: AuditEntry
   striped: boolean
@@ -323,8 +317,10 @@ interface FilaProps {
 
 function FilaAuditoria({ entry, striped, onVerError }: FilaProps) {
   const { fecha, hora } = formatFecha(entry.fecha)
-  const Icon = ACCION_ICONS[entry.accion]
-  const accionColor = ACCION_COLORS[entry.accion]
+  
+  const Icon = ACCION_ICONS[entry.accion] || AlertCircle
+  const accionColor = ACCION_COLORS[entry.accion] || 'text-ink-muted'
+  const accionLabel = ACCION_LABELS[entry.accion] || entry.accion
   const rolClass = ROL_CLASSES[entry.rol] ?? 'bg-surface-muted text-ink-muted'
 
   return (
@@ -334,19 +330,16 @@ function FilaAuditoria({ entry, striped, onVerError }: FilaProps) {
         borderBottom: '1px solid var(--color-border)',
       }}
     >
-      {/* Fecha y hora */}
       <td className="px-4 py-3 whitespace-nowrap">
         <span className="font-medium text-ink text-sm">{hora}</span>
         <span className="block text-xs text-ink-muted">{fecha}</span>
       </td>
 
-      {/* Usuario */}
       <td className="px-4 py-3">
         <span className="font-medium text-ink text-sm">{entry.nombreUsuario}</span>
         <span className="block text-xs text-ink-muted">{entry.email}</span>
       </td>
 
-      {/* Rol */}
       <td className="px-4 py-3 whitespace-nowrap">
         <span
           className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${rolClass}`}
@@ -355,15 +348,13 @@ function FilaAuditoria({ entry, striped, onVerError }: FilaProps) {
         </span>
       </td>
 
-      {/* Acción */}
       <td className="px-4 py-3 whitespace-nowrap">
         <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${accionColor}`}>
           <Icon size={14} className="flex-shrink-0" />
-          {ACCION_LABELS[entry.accion]}
+          {accionLabel}
         </span>
       </td>
 
-      {/* Estado — solo para subida de documentos */}
       <td className="px-4 py-3 whitespace-nowrap">
         {entry.accion === 'subir_documento' ? (
           <EstadoSubida
@@ -378,6 +369,7 @@ function FilaAuditoria({ entry, striped, onVerError }: FilaProps) {
     </tr>
   )
 }
+
 interface EstadoProps {
   estado: 'ok' | 'error'
   detalle: ErrorDetalleSubida | null

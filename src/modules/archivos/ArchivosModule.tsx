@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { Upload, Trash2, Download, Pencil, X, FileSpreadsheet, File } from 'lucide-react'
-import ConfirmarEliminar from '../../components/ConfirmarEliminar'
+import ConfirmarAccion from '../../components/ConfirmarAccion'
 import {
   listExcels,
   uploadExcel,
@@ -333,7 +333,7 @@ export default function ArchivosModule() {
         </>
       )}
 
-      <ConfirmarEliminar
+      <ConfirmarAccion
         open={!!deleteTarget}
         titulo="Eliminar archivo"
         descripcion={

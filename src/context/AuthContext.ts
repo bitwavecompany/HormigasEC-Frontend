@@ -3,7 +3,9 @@ import { createContext } from 'react'
 export interface Usuario {
   id: string
   email: string
+  full_name: string
   role: 'admin' | 'researcher' | 'viewer'
+  is_active: boolean
 }
 
 export interface AuthContextValue {
