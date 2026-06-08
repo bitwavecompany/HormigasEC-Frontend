@@ -13,6 +13,30 @@ interface ProvinciaProperties {
   NAME_1: string
 }
 
+function pointInPolygon(point: number[], vs: number[][]) {
+  const x = point[0], y = point[1]
+  let inside = false
+  for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+    const xi = vs[i][0], yi = vs[i][1]
+    const xj = vs[j][0], yj = vs[j][1]
+    const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+    if (intersect) inside = !inside
+  }
+  return inside
+}
+
+function isPointInFeature(lng: number, lat: number, feature: GeoJSON.Feature) {
+  const geom = feature.geometry
+  if (geom.type === 'Polygon') {
+    return pointInPolygon([lng, lat], geom.coordinates[0] as number[][])
+  } else if (geom.type === 'MultiPolygon') {
+    for (let i = 0; i < geom.coordinates.length; i++) {
+      if (pointInPolygon([lng, lat], geom.coordinates[i][0] as number[][])) return true
+    }
+  }
+  return false
+}
+
 class HomeControl {
   _map: maplibregl.Map | null = null
   _container: HTMLElement | null = null
@@ -49,7 +73,7 @@ interface Props {
   provinciasRegion: string[]
   onProvinciaClick: (provincia: string, hormigas: Hormiga[]) => void
   provinciaSeleccionada: string | null
-  onParroquiaClick: (codigo: string | null, nombre: string | null, canton: string | null) => void
+  onParroquiaClick: (codigo: string | null, nombre: string | null, provinciaPadre: string | null, encontradas: Hormiga[]) => void
   parroquiaSeleccionada: string | null
   parroquiaNombre: string | null
   hormigaEnfocada?: Hormiga | null
@@ -75,7 +99,7 @@ export default function MapaEcuador({
   const [tooltipHover, setTooltipHover] = useState<{
     x: number; y: number;
     nombre: string; cantidadHormigas: number
-    tipo?: 'provincia' | 'parroquia'; canton?: string
+    tipo?: 'provincia' | 'parroquia'; provinciaPadre?: string
   } | null>(null)
 
   const hormigasRef = useRef<Hormiga[]>(hormigas || [])
@@ -322,7 +346,7 @@ export default function MapaEcuador({
         if (isMicroRef.current !== isMicro) {
           isMicroRef.current = isMicro
           if (!isMicro && parroquiaSeleccionadaRef.current !== null) {
-            onParroquiaClickRef.current(null, null, null)
+            onParroquiaClickRef.current(null, null, null, [])
           }
         }
       })
@@ -389,12 +413,8 @@ export default function MapaEcuador({
           return
         }
 
-        if (provinciaSeleccionadaRef.current === clickedProvincia) {
-          map.current?.easeTo({ zoom: 7.5, duration: 800 })
-        } else {
-          const hormigasEnProvincia = (hormigasRef.current || []).filter(h => norm(h.province) === norm(clickedProvincia))
-          onProvinciaClickRef.current(clickedProvincia, hormigasEnProvincia)
-        }
+        const hormigasEnProvincia = (hormigasRef.current || []).filter(h => norm(h.province) === norm(clickedProvincia))
+        onProvinciaClickRef.current(clickedProvincia, hormigasEnProvincia)
       })
 
       map.current.on('mousemove', 'parroquias-global-fill', (e) => {
@@ -421,16 +441,18 @@ export default function MapaEcuador({
         hoveredParroquiaIdRef.current = featureId
         map.current.setFeatureState({ source: 'parroquias-global', id: featureId }, { hover: true })
         
+        const pFeature = parroquiasCacheRef.current?.features.find(f => (f.properties as ParroquiaProperties).CC_3 === props.CC_3)
+        const hormigasEnHover = pFeature ? (hormigasRef.current || []).filter(h => isPointInFeature(Number(h.longitude), Number(h.latitude), pFeature)) : []
         const cantidad = especieSeleccionadaRef.current
-          ? (hormigasRef.current || []).filter(h => h.scientific_name_ant === especieSeleccionadaRef.current && norm(h.parish) === norm(props.NAME_3)).length
-          : (hormigasRef.current || []).filter(h => norm(h.parish) === norm(props.NAME_3)).length
-        
+          ? hormigasEnHover.filter(h => h.scientific_name_ant === especieSeleccionadaRef.current).length
+          : hormigasEnHover.length
+
         setTooltipHover({
           x: e.point.x + 16, y: e.point.y - 16, 
           nombre: props.NAME_3, 
           cantidadHormigas: cantidad, 
           tipo: 'parroquia', 
-          canton: props.NAME_2 
+          provinciaPadre: props.NAME_1 
         })
       })
 
@@ -461,8 +483,11 @@ export default function MapaEcuador({
           return
         }
 
+        const pFeature = parroquiasCacheRef.current?.features.find(f => (f.properties as ParroquiaProperties).CC_3 === clickedParroquia)
+        const hormigasEnParroquia = pFeature ? (hormigasRef.current || []).filter(h => isPointInFeature(Number(h.longitude), Number(h.latitude), pFeature)) : []
+
         if (parroquiaSeleccionadaRef.current === clickedParroquia) {
-          onParroquiaClickRef.current(null, null, null)
+          onParroquiaClickRef.current(null, null, null, [])
           return
         }
 
@@ -472,7 +497,7 @@ export default function MapaEcuador({
         }
         
         setTimeout(() => {
-          onParroquiaClickRef.current(props.CC_3, props.NAME_3, props.NAME_2)
+          onParroquiaClickRef.current(clickedParroquia, props.NAME_3, clickedProvincia, hormigasEnParroquia)
         }, 0)
       })
     })
@@ -547,6 +572,26 @@ export default function MapaEcuador({
           map.current.fitBounds(bounds, { padding: 80, duration: 1200, maxZoom: 8 })
         }
       }
+    } else if (parroquiaSeleccionada && parroquiasCacheRef.current) {
+      const feature = parroquiasCacheRef.current.features.find(
+        f => (f.properties as ParroquiaProperties).CC_3 === parroquiaSeleccionada
+      )
+      if (feature) {
+        const geom = feature.geometry as GeoJSON.Polygon | GeoJSON.MultiPolygon
+        const allPoints: number[][] = []
+        if (geom.type === 'Polygon') {
+          geom.coordinates[0].forEach(c => allPoints.push(c))
+        } else if (geom.type === 'MultiPolygon') {
+          geom.coordinates.forEach(poly => poly[0].forEach(c => allPoints.push(c)))
+        }
+        
+        const lngs = allPoints.map(c => c[0])
+        const lats = allPoints.map(c => c[1])
+        const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2
+        const centerLat = (Math.min(...lats) + Math.max(...lats)) / 2
+
+        map.current.flyTo({ center: [centerLng, centerLat], zoom: 9.5, duration: 1000, essential: true })
+      }
     } else if (provinciaSeleccionada) {
       const feature = provinciasDataRef.current.features.find(
         (f: GeoJSON.Feature) => norm((f.properties as ProvinciaProperties).NAME_1) === norm(provinciaSeleccionada)
@@ -575,7 +620,7 @@ export default function MapaEcuador({
     } else {
       map.current.flyTo({ center: MAP_CENTER, zoom: MAP_ZOOM, duration: 800 })
     }
-  }, [provinciaSeleccionada, hormigaEnfocada, especieSeleccionada, hormigas, listo])
+  }, [parroquiaSeleccionada, provinciaSeleccionada, hormigaEnfocada, especieSeleccionada, hormigas, listo])
 
   useEffect(() => {
     if (!map.current || !listo || !parroquiasCacheRef.current) return
@@ -604,7 +649,10 @@ export default function MapaEcuador({
     if (especieSeleccionada) {
       hormigasFiltradas = (hormigas || []).filter(h => h.scientific_name_ant === especieSeleccionada)
     } else if (parroquiaSeleccionada && parroquiaNombre) {
-      hormigasFiltradas = (hormigas || []).filter(h => norm(h.parish) === norm(parroquiaNombre))
+      const pFeature = parroquiasCacheRef.current?.features.find(f => (f.properties as ParroquiaProperties).CC_3 === parroquiaSeleccionada)
+      if (pFeature) {
+        hormigasFiltradas = (hormigas || []).filter(h => isPointInFeature(Number(h.longitude), Number(h.latitude), pFeature))
+      }
     } else if (provinciaSeleccionada) {
       hormigasFiltradas = (hormigas || []).filter(h => norm(h.province) === norm(provinciaSeleccionada))
     }
@@ -678,7 +726,7 @@ export default function MapaEcuador({
             </div>
             {tooltipHover.tipo === 'parroquia' ? (
               <>
-                {tooltipHover.canton && <p className="text-gray-500 text-xs">Cantón {tooltipHover.canton}</p>}
+                {tooltipHover.provinciaPadre && <p className="text-gray-500 text-xs">Provincia: {tooltipHover.provinciaPadre}</p>}
                 {tooltipHover.cantidadHormigas > 0 ? (
                   <p className="text-green-700 text-xs mt-1">
                     {tooltipHover.cantidadHormigas} especie{tooltipHover.cantidadHormigas !== 1 ? 's' : ''} registrada{tooltipHover.cantidadHormigas !== 1 ? 's' : ''}

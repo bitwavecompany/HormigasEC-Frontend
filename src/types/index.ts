@@ -1,14 +1,15 @@
 export interface Hormiga {
   comun_name_ant: string
   scientific_name_ant: string
+  genus: string
+  species: string
   region: string
   province: string
-  parish?: string
-  species: string
   latitude: number
   longitude: number
   endemic: boolean
-  description: string
+  location_description: string
+  additional_information: string
   dataSource: string
   color_hex?: string
 }
